@@ -1,3 +1,15 @@
-"scripts": {
-  "start": "sh prestart.sh"
+{
+  "name": "panhandle-pulse-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.5.0",
+    "js-yaml": "^4.1.0"
+  }
 }
+
