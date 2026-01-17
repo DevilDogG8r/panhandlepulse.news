@@ -3,16 +3,20 @@ import path from "node:path";
 import yaml from "js-yaml";
 import { XMLParser } from "fast-xml-parser";
 
-/**
- * Determine where the worker is running from and
- * try all reasonable locations for config/sources.yaml
- */
 const ROOT = process.cwd();
 
+/**
+ * IMPORTANT:
+ * Prefer repo-root config first:
+ * - /app/config/sources.yaml (when deployed from repo root)
+ * Then fall back to local worker config ONLY if needed.
+ */
 const CONFIG_PATH_CANDIDATES = [
-  path.join(ROOT, "config", "sources.yaml"),                 // repo root deploy
-  path.join(ROOT, "..", "config", "sources.yaml"),          // if cwd is apps/worker
-  path.join(ROOT, "..", "..", "config", "sources.yaml"),    // deep fallback
+  path.join(ROOT, "config", "sources.yaml"),
+  path.join(ROOT, "..", "config", "sources.yaml"),
+  path.join(ROOT, "..", "..", "config", "sources.yaml"),
+  path.join(ROOT, "apps", "worker", "config", "sources.yaml"),
+  path.join(ROOT, "config", "sources.yml"),
 ];
 
 function loadSourcesYaml() {
@@ -22,10 +26,9 @@ function loadSourcesYaml() {
       const raw = fs.readFileSync(p, "utf8");
       const parsed = yaml.load(raw);
 
+      const keys = parsed ? Object.keys(parsed) : [];
       console.log(
-        `Top-level keys in sources.yaml: ${
-          parsed ? Object.keys(parsed).join(", ") : "(none)"
-        }`
+        `Top-level keys in sources.yaml: ${keys.length ? keys.join(", ") : "(none)"}`
       );
 
       return parsed;
@@ -47,9 +50,9 @@ function flattenSources(config) {
 
   for (const [stateCode, counties] of Object.entries(config.states)) {
     for (const [countyName, countyData] of Object.entries(counties)) {
-      if (!countyData.enabled) continue;
+      if (!countyData?.enabled) continue;
 
-      for (const src of countyData.sources || []) {
+      for (const src of countyData?.sources || []) {
         out.push({
           state: stateCode,
           county: countyName,
@@ -74,11 +77,7 @@ async function fetchText(url) {
       "user-agent": "PanhandlePulseBot/0.1 (+https://panhandlepulse.news)",
     },
   });
-
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status} for ${url}`);
-  }
-
+  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.text();
 }
 
@@ -136,21 +135,20 @@ async function main() {
   console.log(`RSS sources: ${rssSources.length}`);
 
   for (const src of rssSources) {
-    console.log(
-      `\n[${src.state} / ${src.county}] ${src.source_name}\n${src.rss_url}`
-    );
+    console.log(`\n[${src.state} / ${src.county}] ${src.source_name}`);
+    console.log(`RSS: ${src.rss_url}`);
 
     try {
       const xml = await fetchText(src.rss_url);
       const items = parseRss(xml).slice(0, 5);
 
-      console.log(`Found ${items.length} items`);
+      console.log(`Found ${items.length} items (showing up to 5):`);
       for (const it of items) {
         console.log(`- ${it.title}`);
         console.log(`  ${it.link}`);
       }
     } catch (err) {
-      console.error(`ERROR fetching ${src.rss_url}: ${err.message}`);
+      console.error(`ERROR: ${err.message}`);
     }
   }
 
