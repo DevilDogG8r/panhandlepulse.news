@@ -5,18 +5,11 @@ import { XMLParser } from "fast-xml-parser";
 
 const ROOT = process.cwd();
 
-/**
- * IMPORTANT:
- * Prefer repo-root config first:
- * - /app/config/sources.yaml (when deployed from repo root)
- * Then fall back to local worker config ONLY if needed.
- */
 const CONFIG_PATH_CANDIDATES = [
   path.join(ROOT, "config", "sources.yaml"),
   path.join(ROOT, "..", "config", "sources.yaml"),
   path.join(ROOT, "..", "..", "config", "sources.yaml"),
   path.join(ROOT, "apps", "worker", "config", "sources.yaml"),
-  path.join(ROOT, "config", "sources.yml"),
 ];
 
 function loadSourcesYaml() {
@@ -25,16 +18,13 @@ function loadSourcesYaml() {
       console.log(`Using sources.yaml at: ${p}`);
       const raw = fs.readFileSync(p, "utf8");
       const parsed = yaml.load(raw);
-
       const keys = parsed ? Object.keys(parsed) : [];
       console.log(
         `Top-level keys in sources.yaml: ${keys.length ? keys.join(", ") : "(none)"}`
       );
-
       return parsed;
     }
   }
-
   throw new Error(
     `sources.yaml not found. Tried:\n${CONFIG_PATH_CANDIDATES.join("\n")}`
   );
@@ -42,7 +32,6 @@ function loadSourcesYaml() {
 
 function flattenSources(config) {
   const out = [];
-
   if (!config || !config.states) {
     console.log("No states found in sources.yaml");
     return out;
@@ -53,15 +42,10 @@ function flattenSources(config) {
       if (!countyData?.enabled) continue;
 
       for (const src of countyData?.sources || []) {
-        out.push({
-          state: stateCode,
-          county: countyName,
-          ...src,
-        });
+        out.push({ state: stateCode, county: countyName, ...src });
       }
     }
   }
-
   return out;
 }
 
@@ -90,7 +74,6 @@ function parseRss(xml) {
 
   const doc = parser.parse(xml);
 
-  // RSS 2.0
   if (doc?.rss?.channel?.item) {
     const items = Array.isArray(doc.rss.channel.item)
       ? doc.rss.channel.item
@@ -104,7 +87,6 @@ function parseRss(xml) {
     }));
   }
 
-  // Atom
   if (doc?.feed?.entry) {
     const entries = Array.isArray(doc.feed.entry)
       ? doc.feed.entry
@@ -134,6 +116,9 @@ async function main() {
   console.log(`Loaded sources: ${sources.length}`);
   console.log(`RSS sources: ${rssSources.length}`);
 
+  let ok = 0;
+  let failed = 0;
+
   for (const src of rssSources) {
     console.log(`\n[${src.state} / ${src.county}] ${src.source_name}`);
     console.log(`RSS: ${src.rss_url}`);
@@ -141,21 +126,24 @@ async function main() {
     try {
       const xml = await fetchText(src.rss_url);
       const items = parseRss(xml).slice(0, 5);
-
       console.log(`Found ${items.length} items (showing up to 5):`);
       for (const it of items) {
         console.log(`- ${it.title}`);
         console.log(`  ${it.link}`);
       }
+      ok += 1;
     } catch (err) {
       console.error(`ERROR: ${err.message}`);
+      failed += 1;
     }
   }
 
-  console.log("\nWorker run complete.");
+  console.log(`\nSummary: RSS OK=${ok}, Failed=${failed}`);
+  console.log("Worker run complete.");
 }
 
 main().catch((err) => {
   console.error("Fatal worker error:", err);
   process.exit(1);
 });
+
