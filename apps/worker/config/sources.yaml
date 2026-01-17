@@ -1,0 +1,4 @@
+const CONFIG_PATH_CANDIDATES = [
+  path.join(ROOT, "config", "sources.yaml"),
+  path.join(ROOT, "..", "..", "config", "sources.yaml"),
+];
