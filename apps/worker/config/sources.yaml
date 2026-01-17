@@ -55,7 +55,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.pnj.com
-          rss_url: https://www.pnj.com/rss/
+          rss_url: ""   # was https://www.pnj.com/rss/ (404)
           social_urls:
             facebook: ""
             x: ""
@@ -67,7 +67,7 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://www.santarosa.fl.gov
-          rss_url: https://www.santarosa.fl.gov/RSS.aspx
+          rss_url: ""   # https://www.santarosa.fl.gov/RSS.aspx is a hub page; returns 0 items
           social_urls:
             facebook: ""
             x: ""
@@ -151,7 +151,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.nwfdailynews.com
-          rss_url: https://www.nwfdailynews.com/rss/
+          rss_url: ""  # was https://www.nwfdailynews.com/rss/ (404)
           social_urls:
             facebook: ""
             x: ""
@@ -199,7 +199,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.waltonsun.com
-          rss_url: https://www.waltonsun.com/rss/
+          rss_url: ""  # was https://www.waltonsun.com/rss/ (404)
           social_urls:
             facebook: ""
             x: ""
@@ -247,7 +247,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.newsherald.com
-          rss_url: https://www.newsherald.com/rss/
+          rss_url: ""  # was https://www.newsherald.com/rss/ (404)
           social_urls:
             facebook: ""
             x: ""
