@@ -1,4 +1,253 @@
-const CONFIG_PATH_CANDIDATES = [
-  path.join(ROOT, "config", "sources.yaml"),
-  path.join(ROOT, "..", "..", "config", "sources.yaml"),
-];
+version: 1
+
+defaults:
+  check_intervals_minutes:
+    tier_1a: 10
+    tier_1b: 7
+    tier_2: 15
+  publish_rules:
+    tier_1a: auto
+    tier_1b: trigger_update
+    tier_2: developing
+
+states:
+  FL:
+    Escambia:
+      enabled: true
+      sources:
+        - source_name: Escambia County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://myescambia.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Escambia County Sheriff’s Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://escambiaso.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Escambia County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://myescambia.com/our-services/emergency-management
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Escambia County School District
+          source_type: school
+          tier: 1A
+          website_url: https://ecsd-fl.schoolloop.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Pensacola News Journal
+          source_type: media
+          tier: 2
+          website_url: https://www.pnj.com
+          rss_url: https://www.pnj.com/rss/
+          social_urls:
+            facebook: ""
+            x: ""
+
+    Santa_Rosa:
+      enabled: true
+      sources:
+        - source_name: Santa Rosa County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.santarosa.fl.gov
+          rss_url: https://www.santarosa.fl.gov/RSS.aspx
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Santa Rosa County Sheriff’s Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.santarosasheriff.org
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Santa Rosa County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.santarosa.fl.gov/237/Emergency-Management
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Santa Rosa County School District
+          source_type: school
+          tier: 1A
+          website_url: https://www.santarosa.k12.fl.us
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Navarre Press
+          source_type: media
+          tier: 2
+          website_url: https://navarrepress.com
+          rss_url: https://navarrepress.com/feed/
+          social_urls:
+            facebook: ""
+            x: ""
+
+    Okaloosa:
+      enabled: true
+      sources:
+        - source_name: Okaloosa County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://myokaloosa.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Okaloosa County Sheriff’s Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.ocso.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Okaloosa County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://myokaloosa.com/ps/em
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Okaloosa County School District
+          source_type: school
+          tier: 1A
+          website_url: https://www.okaloosaschools.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Northwest Florida Daily News
+          source_type: media
+          tier: 2
+          website_url: https://www.nwfdailynews.com
+          rss_url: https://www.nwfdailynews.com/rss/
+          social_urls:
+            facebook: ""
+            x: ""
+
+    Walton:
+      enabled: true
+      sources:
+        - source_name: Walton County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.co.walton.fl.us
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Walton County Sheriff’s Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.waltonso.org
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Walton County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.co.walton.fl.us/167/Emergency-Management
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Walton County School District
+          source_type: school
+          tier: 1A
+          website_url: https://www.walton.k12.fl.us
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Walton Sun
+          source_type: media
+          tier: 2
+          website_url: https://www.waltonsun.com
+          rss_url: https://www.waltonsun.com/rss/
+          social_urls:
+            facebook: ""
+            x: ""
+
+    Bay:
+      enabled: true
+      sources:
+        - source_name: Bay County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.baycountyfl.gov
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Bay County Sheriff’s Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.baysheriff.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Bay County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.baycountyfl.gov
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: Bay District Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.bayschools.com
+          rss_url: ""
+          social_urls:
+            facebook: ""
+            x: ""
+
+        - source_name: The News Herald
+          source_type: media
+          tier: 2
+          website_url: https://www.newsherald.com
+          rss_url: https://www.newsherald.com/rss/
+          social_urls:
+            facebook: ""
+            x: ""
