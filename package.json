@@ -1,0 +1,7 @@
+{
+  "name": "panhandlepulse-root",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix apps/worker start"
+  }
+}
