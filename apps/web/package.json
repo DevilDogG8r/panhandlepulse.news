@@ -1,0 +1,19 @@
+{
+  "name": "@panhandlepulse/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "start": "next start -p $PORT"
+  },
+  "dependencies": {
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "pg": "8.13.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
