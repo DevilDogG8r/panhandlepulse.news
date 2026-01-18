@@ -1,11 +1,11 @@
 /**
- * Panhandle Pulse — GDELT Search Ingest Worker
- * Replacement file: apps/worker/search_ingest.js
+ * Panhandle Pulse — GDELT Search Ingest Worker (ESM)
+ * File: apps/worker/search_ingest.js
  *
- * Key goals:
- * - No "keyword too short" errors (we never send short keywords)
+ * Fixes:
+ * - No "keyword too short" errors (guards)
  * - No Postgres timezone errors (no AT TIME ZONE, no timezone strings)
- * - Clean cron-friendly: run once, log, exit 0
+ * - ESM-compatible (no require)
  *
  * Required ENV:
  * - DATABASE_URL
@@ -17,9 +17,7 @@
  * - MIN_KEYWORD_LEN (default: 4)
  */
 
-'use strict';
-
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
 const GDELT_DOC_API = process.env.GDELT_DOC_API || 'https://api.gdeltproject.org/api/v2/doc/doc';
 const LOOKBACK_HOURS = Number(process.env.LOOKBACK_HOURS || 12);
@@ -33,7 +31,7 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Railway typically uses SSL; pg auto-handles in many cases, but this keeps it safe.
+  // Railway Postgres commonly requires SSL; this keeps it working in most setups.
   ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false }
 });
 
@@ -84,7 +82,6 @@ function gdeltUtcStamp(date = new Date()) {
 }
 
 // Parse GDELT seendate format "YYYYMMDDHHMMSS" into JS Date (UTC)
-// Returns null if missing/invalid.
 function parseGdeltSeenDate(seendate) {
   if (!seendate || typeof seendate !== 'string' || seendate.length < 14) return null;
   const y = Number(seendate.slice(0, 4));
@@ -94,17 +91,13 @@ function parseGdeltSeenDate(seendate) {
   const mm = Number(seendate.slice(10, 12));
   const ss = Number(seendate.slice(12, 14));
   if (![y, mo, da, hh, mm, ss].every(Number.isFinite)) return null;
-
-  // Date.UTC expects month 0-11
   return new Date(Date.UTC(y, mo - 1, da, hh, mm, ss));
 }
 
-// Safe keyword validation
 function isValidKeyword(q) {
   if (!q) return false;
   const cleaned = String(q).trim();
-  if (cleaned.length < MIN_KEYWORD_LEN) return false;
-  return true;
+  return cleaned.length >= MIN_KEYWORD_LEN;
 }
 
 function buildGdeltUrl({ query, startdatetime, enddatetime, maxrecords }) {
@@ -129,26 +122,8 @@ async function fetchJson(url) {
 }
 
 // ------------------------------------
-// DB upsert (ONLY place you should need to edit if schema differs)
+// DB upsert (ONLY edit this block if schema differs)
 // ------------------------------------
-/**
- * Expected table (example):
- *
- * CREATE TABLE IF NOT EXISTS panhandle_articles (
- *   id BIGSERIAL PRIMARY KEY,
- *   source TEXT,
- *   region_tag TEXT,
- *   query TEXT,
- *   title TEXT,
- *   url TEXT UNIQUE,
- *   domain TEXT,
- *   published_at TIMESTAMPTZ,
- *   fetched_at TIMESTAMPTZ,
- *   image TEXT,
- *   summary TEXT
- * );
- */
-
 const UPSERT_SQL = `
   INSERT INTO panhandle_articles
     (source, region_tag, query, title, url, domain, published_at, fetched_at, image, summary)
@@ -165,18 +140,17 @@ const UPSERT_SQL = `
 
 async function upsertArticles({ regionTag, query, articles }) {
   let insertAttempts = 0;
-  const fetchedAt = new Date(); // stored as timestamptz safely (no timezone strings)
+  const fetchedAt = new Date(); // safe timestamptz value
 
   for (const a of articles) {
     const url = a?.url || a?.urlsource || a?.sourceurl;
     const title = a?.title || null;
     if (!url || !title) continue;
 
-    // domain extraction (best effort)
     let domain = null;
     try {
       domain = new URL(url).hostname;
-    } catch (_) {}
+    } catch {}
 
     const publishedAt = parseGdeltSeenDate(a?.seendate) || null;
     const image = a?.socialimage || a?.image || null;
@@ -191,13 +165,12 @@ async function upsertArticles({ regionTag, query, articles }) {
         title,
         url,
         domain,
-        publishedAt,     // Date or null
-        fetchedAt,       // Date
+        publishedAt,
+        fetchedAt,
         image,
         summary
       ]);
     } catch (err) {
-      // Keep going; log and continue
       console.error(`[${regionTag}] DB_ERROR url=${url} msg=${err?.message || err}`);
     }
   }
@@ -214,7 +187,9 @@ async function run() {
   const end = gdeltUtcStamp(new Date());
   const start = gdeltUtcStamp(new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000));
 
-  console.log(`[SEARCH_INGEST_START] ts=${new Date().toISOString()} lookbackHours=${LOOKBACK_HOURS} maxRecords=${MAX_RECORDS} minKeywordLen=${MIN_KEYWORD_LEN}`);
+  console.log(
+    `[SEARCH_INGEST_START] ts=${new Date().toISOString()} lookbackHours=${LOOKBACK_HOURS} maxRecords=${MAX_RECORDS} minKeywordLen=${MIN_KEYWORD_LEN}`
+  );
   console.log(`[TIME] start=${start} end=${end}`);
   console.log(`[CONFIG] gdeltDocApi=${GDELT_DOC_API}`);
 
@@ -241,8 +216,6 @@ async function run() {
 
       try {
         const json = await fetchJson(url);
-
-        // GDELT doc API typically returns { articles: [...] } for ArtList
         const articles = Array.isArray(json?.articles) ? json.articles : [];
         const results = articles.length;
 
@@ -254,7 +227,6 @@ async function run() {
         totalResults += results;
         totalInsertAttempts += insertAttempts;
 
-        // Log format matching your current output style
         console.log(`[${regionTag}] ${query} -> results=${results}, insertAttempts=${insertAttempts}`);
       } catch (err) {
         console.error(`[${regionTag}] ERROR: ${err?.message || err}`);
@@ -263,7 +235,9 @@ async function run() {
   }
 
   const durationMs = Date.now() - started;
-  console.log(`[SEARCH_INGEST_DONE] totalResults=${totalResults} totalInsertAttempts=${totalInsertAttempts} durationMs=${durationMs}`);
+  console.log(
+    `[SEARCH_INGEST_DONE] totalResults=${totalResults} totalInsertAttempts=${totalInsertAttempts} durationMs=${durationMs}`
+  );
 }
 
 // Run once for cron, then exit
