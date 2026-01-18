@@ -19,46 +19,36 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://myescambia.com
-          rss_url: ""   # NOT CivicPlus; needs a different feed approach
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Escambia County Sheriff’s Office
           source_type: sheriff
           tier: 1A
           website_url: https://escambiaso.com
-          rss_url: ""   # needs a different feed approach
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Escambia County Emergency Management
           source_type: em
           tier: 1A
           website_url: https://myescambia.com/our-services/emergency-management
-          rss_url: ""   # needs a different feed approach
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Escambia County School District
           source_type: school
           tier: 1A
-          website_url: https://ecsd-fl.schoolloop.com
-          rss_url: ""   # needs a different feed approach
-          social_urls:
-            facebook: ""
-            x: ""
+          website_url: https://www.escambiak12.net
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Pensacola News Journal
           source_type: media
           tier: 2
           website_url: https://www.pnj.com
-          rss_url: ""   # keep blank for now
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
     Santa_Rosa:
       enabled: true
@@ -67,46 +57,43 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://www.santarosa.fl.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Santa Rosa County News Flash
+          source_type: county_gov_news
+          tier: 1A
+          website_url: https://www.santarosa.fl.gov/NewsFlash.aspx
           rss_url: "https://www.santarosa.fl.gov/RSSFeed.aspx?CID=All-newsflash.xml&ModID=1"
-          social_urls:
-            facebook: ""
-            x: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Santa Rosa County Sheriff’s Office
           source_type: sheriff
           tier: 1A
           website_url: https://www.santarosasheriff.org
-          rss_url: ""   # sheriff site RSS not confirmed yet
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Santa Rosa County Emergency Management
           source_type: em
           tier: 1A
           website_url: https://www.santarosa.fl.gov/237/Emergency-Management
-          rss_url: "https://www.santarosa.fl.gov/RSSFeed.aspx?CID=All-0&ModID=63"
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Santa Rosa County School District
           source_type: school
           tier: 1A
           website_url: https://www.santarosa.k12.fl.us
-          rss_url: ""   # school site RSS not confirmed yet
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Navarre Press
           source_type: media
           tier: 2
           website_url: https://navarrepress.com
           rss_url: "https://navarrepress.com/feed/"
-          social_urls:
-            facebook: ""
-            x: ""
+          social_urls: { facebook: "", x: "" }
 
     Okaloosa:
       enabled: true
@@ -115,46 +102,36 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://myokaloosa.com
-          rss_url: ""   # not CivicPlus; needs a different feed approach
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Okaloosa County Sheriff’s Office
           source_type: sheriff
           tier: 1A
           website_url: https://www.ocso.com
-          rss_url: ""   # needs confirmation
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Okaloosa County Emergency Management
           source_type: em
           tier: 1A
           website_url: https://myokaloosa.com/ps/em
-          rss_url: ""   # not CivicPlus; needs a different feed approach
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Okaloosa County School District
           source_type: school
           tier: 1A
           website_url: https://www.okaloosaschools.com
-          rss_url: ""   # needs confirmation
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Northwest Florida Daily News
           source_type: media
           tier: 2
           website_url: https://www.nwfdailynews.com
-          rss_url: ""   # keep blank for now
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
     Walton:
       enabled: true
@@ -163,46 +140,43 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://www.co.walton.fl.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Walton County News Flash
+          source_type: county_gov_news
+          tier: 1A
+          website_url: https://www.co.walton.fl.us/CivicAlerts.aspx
           rss_url: "https://www.mywaltonfl.gov/RSSFeed.aspx?CID=All-newsflash.xml&ModID=1"
-          social_urls:
-            facebook: ""
-            x: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Walton County Sheriff’s Office
           source_type: sheriff
           tier: 1A
           website_url: https://www.waltonso.org
-          rss_url: ""   # needs confirmation
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Walton County Emergency Management
           source_type: em
           tier: 1A
           website_url: https://www.co.walton.fl.us/167/Emergency-Management
-          rss_url: "https://www.mywaltonfl.gov/RSSFeed.aspx?CID=All-0&ModID=63"
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Walton County School District
           source_type: school
           tier: 1A
           website_url: https://www.walton.k12.fl.us
-          rss_url: ""   # needs confirmation
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Walton Sun
           source_type: media
           tier: 2
           website_url: https://www.waltonsun.com
-          rss_url: ""   # keep blank for now
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
     Bay:
       enabled: true
@@ -211,43 +185,401 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://www.baycountyfl.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Bay County News Flash
+          source_type: county_gov_news
+          tier: 1A
+          website_url: https://www.baycountyfl.gov/CivicAlerts.aspx
           rss_url: "https://www.baycountyfl.gov/RSSFeed.aspx?CID=All-newsflash.xml&ModID=1"
-          social_urls:
-            facebook: ""
-            x: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Bay County Sheriff’s Office
           source_type: sheriff
           tier: 1A
           website_url: https://www.baysheriff.com
-          rss_url: ""   # needs confirmation
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Bay County Emergency Management
           source_type: em
           tier: 1A
           website_url: https://www.baycountyfl.gov
-          rss_url: "https://www.baycountyfl.gov/RSSFeed.aspx?CID=All-0&ModID=63"
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: Bay District Schools
           source_type: school
           tier: 1A
           website_url: https://www.bayschools.com
-          rss_url: ""   # needs confirmation
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
 
         - source_name: The News Herald
           source_type: media
           tier: 2
           website_url: https://www.newsherald.com
-          rss_url: ""  # keep blank for now
-          social_urls:
-            facebook: ""
-            x: ""
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Gulf:
+      enabled: true
+      sources:
+        - source_name: Gulf County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.gulfcounty-fl.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Gulf County Newsletters (RSS)
+          source_type: county_gov_news
+          tier: 1A
+          website_url: https://www.gulfcounty-fl.gov/newsletter/
+          rss_url: "https://www.gulfcounty-fl.gov/syndication/rss.aspx?ctx_id=17335310&feed=allnewslettermessages&key=1ZZQZ%2BjAtW2WF%2FWewctR6TaGpOotnuElU1ba6hGBykeEEpjLGWVGsvbUQA2VyTt86oMxml294JfMyd7HJOL3Seky3WE%3D&serverid=6500990&userid=5"
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Gulf County Sheriff’s Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.gulfcountysheriff.org
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Gulf County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.gulfcounty-fl.gov/emergency-management/
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Gulf County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.gulf.k12.fl.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Franklin:
+      enabled: true
+      sources:
+        - source_name: Franklin County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.franklincountyflorida.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Franklin County Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.fcso.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Franklin County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.franklincountyflorida.com/departments/emergency-management/
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Franklin County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.franklin.k12.fl.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Holmes:
+      enabled: true
+      sources:
+        - source_name: Holmes County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.holmescountyfl.org
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Holmes County Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.hcsofl.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Holmes County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.holmescountyfl.org/emergency-management
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Holmes District Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.hdsb.org
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Washington:
+      enabled: true
+      sources:
+        - source_name: Washington County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.washingtonfl.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Washington County Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.wcso.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Washington County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.washingtonfl.com/departments/emergency-management/
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Washington County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.wcsdschools.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Jackson:
+      enabled: true
+      sources:
+        - source_name: Jackson County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://jacksoncountyfl.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Jackson County Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.jacksoncountysheriff.org
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Jackson County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://jacksoncountyfl.gov/emergency-management/
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Jackson County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.jcsb.org
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Calhoun:
+      enabled: true
+      sources:
+        - source_name: Calhoun County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.calhouncountyfl.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Calhoun County Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.calhounsheriff.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Calhoun County Emergency Management
+          source_type: em
+          tier: 1A
+          website_url: https://www.calhouncountyfl.gov/departments/emergency-management/
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Calhoun County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.calhounflschools.org
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+  AL:
+    Mobile:
+      enabled: true
+      sources:
+        - source_name: Mobile County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.mobilecountyal.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Mobile County Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.mobileso.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Mobile County EMA
+          source_type: em
+          tier: 1A
+          website_url: https://www.mobilecountyal.gov/government/emergency-management-agency/
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Mobile County Public School System
+          source_type: school
+          tier: 1A
+          website_url: https://www.mcpss.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Baldwin:
+      enabled: true
+      sources:
+        - source_name: Baldwin County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.baldwincountyal.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Baldwin County Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.baldwincountysheriff.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Baldwin County EMA
+          source_type: em
+          tier: 1A
+          website_url: https://www.baldwincountyal.gov/departments/emergency-management-agency
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Baldwin County Public Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.bcbe.org
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Escambia_AL:
+      enabled: true
+      sources:
+        - source_name: Escambia County (AL) Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.escambiacountyal.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Escambia County (AL) Sheriff's Office
+          source_type: sheriff
+          tier: 1A
+          website_url: https://www.escambiaso.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Escambia County (AL) Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.escambiaschools.net
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Covington:
+      enabled: true
+      sources:
+        - source_name: Covington County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.covcounty.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Covington County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.cov.k12.al.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Geneva:
+      enabled: true
+      sources:
+        - source_name: Geneva County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.genevacountyalabama.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Geneva County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.genevacountyschools.com
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Houston:
+      enabled: true
+      sources:
+        - source_name: Houston County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.houstoncountyal.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+        - source_name: Houston County Schools
+          source_type: school
+          tier: 1A
+          website_url: https://www.hcboe.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Coffee:
+      enabled: true
+      sources:
+        - source_name: Coffee County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.coffeecounty.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Dale:
+      enabled: true
+      sources:
+        - source_name: Dale County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.dalecounty-al.gov
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
+
+    Henry:
+      enabled: true
+      sources:
+        - source_name: Henry County Government
+          source_type: county_gov
+          tier: 1A
+          website_url: https://www.henrycountyal.us
+          rss_url: ""
+          social_urls: { facebook: "", x: "" }
