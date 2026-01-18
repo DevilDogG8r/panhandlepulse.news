@@ -1,41 +1,151 @@
-import { getPool } from "./db";
+// apps/web/lib/queries.ts
+import { Pool } from "pg";
+
+let pool: Pool | null = null;
+
+function getPool() {
+  if (!pool) {
+    if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL not set");
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.PGSSLMODE === "disable" ? false : { rejectUnauthorized: false },
+    });
+  }
+  return pool;
+}
 
 export type FeedItem = {
-  id: string | number;
+  id: number;
   title: string;
   url: string;
   published_at: string | null;
+  fetched_at: string | null;
+  source: string | null;
+  county: string | null;
+  state: string | null;
+  image_url: string | null;
   summary: string | null;
-  source_id: string | number | null;
 };
 
-export async function getLatestFeedItems(limit = 50): Promise<FeedItem[]> {
-  const pool = getPool();
+function toFeedItem(row: any): FeedItem {
+  return {
+    id: Number(row.id),
+    title: row.title,
+    url: row.url,
+    published_at: row.published_at,
+    fetched_at: row.fetched_at,
+    source: row.source ?? row.domain ?? null,
+    county: row.county ?? null,
+    state: row.state ?? null,
+    image_url: row.image_url ?? row.socialimage ?? null,
+    summary: row.summary ?? row.description ?? row.excerpt ?? null,
+  };
+}
 
-  // IMPORTANT: Your worker inserts into feed_items(link, published_at, summary, ...)
+/**
+ * Latest RSS/Stories (dedup by URL)
+ * Assumes your RSS pipeline writes into `stories`.
+ */
+export async function getLatestStories(limit = 50): Promise<FeedItem[]> {
+  const db = getPool();
+
+  // Dedup: keep the newest row per URL
   const sql = `
-    SELECT
+    SELECT DISTINCT ON (url)
       id,
-      COALESCE(title, '') AS title,
-      link AS url,
-      CASE WHEN published_at IS NULL THEN NULL ELSE published_at::text END AS published_at,
-      summary,
-      source_id
-    FROM feed_items
-    ORDER BY
-      published_at DESC NULLS LAST,
-      id DESC
+      title,
+      url,
+      published_at,
+      fetched_at,
+      source,
+      county,
+      state,
+      image_url,
+      summary
+    FROM stories
+    WHERE url IS NOT NULL AND title IS NOT NULL
+    ORDER BY url, COALESCE(published_at, fetched_at) DESC
     LIMIT $1
   `;
 
-  const res = await pool.query(sql, [limit]);
+  const { rows } = await db.query(sql, [limit]);
+  return rows.map(toFeedItem);
+}
 
-  return res.rows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    url: r.url,
-    published_at: r.published_at,
-    summary: r.summary ?? null,
-    source_id: r.source_id ?? null
-  }));
+/**
+ * Latest GDELT search ingest (dedup by URL)
+ */
+export async function getLatestSearch(limit = 50): Promise<FeedItem[]> {
+  const db = getPool();
+
+  const sql = `
+    SELECT DISTINCT ON (url)
+      id,
+      title,
+      url,
+      published_at,
+      fetched_at,
+      domain as source,
+      county,
+      state,
+      image_url,
+      summary
+    FROM panhandle_search_articles
+    WHERE url IS NOT NULL AND title IS NOT NULL
+    ORDER BY url, COALESCE(published_at, fetched_at) DESC
+    LIMIT $1
+  `;
+
+  const { rows } = await db.query(sql, [limit]);
+  return rows.map(toFeedItem);
+}
+
+/**
+ * Combined feed (RSS + GDELT), dedup across both by URL.
+ * If the same URL appears in both, newest wins.
+ */
+export async function getCombinedFeed(limit = 50): Promise<FeedItem[]> {
+  const db = getPool();
+
+  const sql = `
+    WITH combined AS (
+      SELECT
+        id,
+        title,
+        url,
+        published_at,
+        fetched_at,
+        source,
+        county,
+        state,
+        image_url,
+        summary
+      FROM stories
+      WHERE url IS NOT NULL AND title IS NOT NULL
+
+      UNION ALL
+
+      SELECT
+        id,
+        title,
+        url,
+        published_at,
+        fetched_at,
+        domain as source,
+        county,
+        state,
+        image_url,
+        summary
+      FROM panhandle_search_articles
+      WHERE url IS NOT NULL AND title IS NOT NULL
+    )
+    SELECT DISTINCT ON (url)
+      *
+    FROM combined
+    ORDER BY url, COALESCE(published_at, fetched_at) DESC
+    LIMIT $1
+  `;
+
+  const { rows } = await db.query(sql, [limit]);
+  return rows.map(toFeedItem);
 }
