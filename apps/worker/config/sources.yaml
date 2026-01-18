@@ -19,7 +19,7 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://myescambia.com
-          rss_url: ""
+          rss_url: ""   # NOT CivicPlus; needs a different feed approach
           social_urls:
             facebook: ""
             x: ""
@@ -28,7 +28,7 @@ states:
           source_type: sheriff
           tier: 1A
           website_url: https://escambiaso.com
-          rss_url: ""
+          rss_url: ""   # needs a different feed approach
           social_urls:
             facebook: ""
             x: ""
@@ -37,7 +37,7 @@ states:
           source_type: em
           tier: 1A
           website_url: https://myescambia.com/our-services/emergency-management
-          rss_url: ""
+          rss_url: ""   # needs a different feed approach
           social_urls:
             facebook: ""
             x: ""
@@ -46,7 +46,7 @@ states:
           source_type: school
           tier: 1A
           website_url: https://ecsd-fl.schoolloop.com
-          rss_url: ""
+          rss_url: ""   # needs a different feed approach
           social_urls:
             facebook: ""
             x: ""
@@ -55,7 +55,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.pnj.com
-          rss_url: ""   # was https://www.pnj.com/rss/ (404)
+          rss_url: ""   # keep blank for now
           social_urls:
             facebook: ""
             x: ""
@@ -67,7 +67,7 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://www.santarosa.fl.gov
-          rss_url: ""   # https://www.santarosa.fl.gov/RSS.aspx is a hub page; returns 0 items
+          rss_url: "https://www.santarosa.fl.gov/RSSFeed.aspx?CID=All-newsflash.xml&ModID=1"
           social_urls:
             facebook: ""
             x: ""
@@ -76,7 +76,7 @@ states:
           source_type: sheriff
           tier: 1A
           website_url: https://www.santarosasheriff.org
-          rss_url: ""
+          rss_url: ""   # sheriff site RSS not confirmed yet
           social_urls:
             facebook: ""
             x: ""
@@ -85,7 +85,7 @@ states:
           source_type: em
           tier: 1A
           website_url: https://www.santarosa.fl.gov/237/Emergency-Management
-          rss_url: ""
+          rss_url: "https://www.santarosa.fl.gov/RSSFeed.aspx?CID=All-0&ModID=63"
           social_urls:
             facebook: ""
             x: ""
@@ -94,7 +94,7 @@ states:
           source_type: school
           tier: 1A
           website_url: https://www.santarosa.k12.fl.us
-          rss_url: ""
+          rss_url: ""   # school site RSS not confirmed yet
           social_urls:
             facebook: ""
             x: ""
@@ -103,7 +103,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://navarrepress.com
-          rss_url: https://navarrepress.com/feed/
+          rss_url: "https://navarrepress.com/feed/"
           social_urls:
             facebook: ""
             x: ""
@@ -115,7 +115,7 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://myokaloosa.com
-          rss_url: ""
+          rss_url: ""   # not CivicPlus; needs a different feed approach
           social_urls:
             facebook: ""
             x: ""
@@ -124,7 +124,7 @@ states:
           source_type: sheriff
           tier: 1A
           website_url: https://www.ocso.com
-          rss_url: ""
+          rss_url: ""   # needs confirmation
           social_urls:
             facebook: ""
             x: ""
@@ -133,7 +133,7 @@ states:
           source_type: em
           tier: 1A
           website_url: https://myokaloosa.com/ps/em
-          rss_url: ""
+          rss_url: ""   # not CivicPlus; needs a different feed approach
           social_urls:
             facebook: ""
             x: ""
@@ -142,7 +142,7 @@ states:
           source_type: school
           tier: 1A
           website_url: https://www.okaloosaschools.com
-          rss_url: ""
+          rss_url: ""   # needs confirmation
           social_urls:
             facebook: ""
             x: ""
@@ -151,7 +151,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.nwfdailynews.com
-          rss_url: ""  # was https://www.nwfdailynews.com/rss/ (404)
+          rss_url: ""   # keep blank for now
           social_urls:
             facebook: ""
             x: ""
@@ -163,7 +163,7 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://www.co.walton.fl.us
-          rss_url: ""
+          rss_url: "https://www.mywaltonfl.gov/RSSFeed.aspx?CID=All-newsflash.xml&ModID=1"
           social_urls:
             facebook: ""
             x: ""
@@ -172,7 +172,7 @@ states:
           source_type: sheriff
           tier: 1A
           website_url: https://www.waltonso.org
-          rss_url: ""
+          rss_url: ""   # needs confirmation
           social_urls:
             facebook: ""
             x: ""
@@ -181,7 +181,7 @@ states:
           source_type: em
           tier: 1A
           website_url: https://www.co.walton.fl.us/167/Emergency-Management
-          rss_url: ""
+          rss_url: "https://www.mywaltonfl.gov/RSSFeed.aspx?CID=All-0&ModID=63"
           social_urls:
             facebook: ""
             x: ""
@@ -190,7 +190,7 @@ states:
           source_type: school
           tier: 1A
           website_url: https://www.walton.k12.fl.us
-          rss_url: ""
+          rss_url: ""   # needs confirmation
           social_urls:
             facebook: ""
             x: ""
@@ -199,7 +199,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.waltonsun.com
-          rss_url: ""  # was https://www.waltonsun.com/rss/ (404)
+          rss_url: ""   # keep blank for now
           social_urls:
             facebook: ""
             x: ""
@@ -211,7 +211,7 @@ states:
           source_type: county_gov
           tier: 1A
           website_url: https://www.baycountyfl.gov
-          rss_url: ""
+          rss_url: "https://www.baycountyfl.gov/RSSFeed.aspx?CID=All-newsflash.xml&ModID=1"
           social_urls:
             facebook: ""
             x: ""
@@ -220,7 +220,7 @@ states:
           source_type: sheriff
           tier: 1A
           website_url: https://www.baysheriff.com
-          rss_url: ""
+          rss_url: ""   # needs confirmation
           social_urls:
             facebook: ""
             x: ""
@@ -229,7 +229,7 @@ states:
           source_type: em
           tier: 1A
           website_url: https://www.baycountyfl.gov
-          rss_url: ""
+          rss_url: "https://www.baycountyfl.gov/RSSFeed.aspx?CID=All-0&ModID=63"
           social_urls:
             facebook: ""
             x: ""
@@ -238,7 +238,7 @@ states:
           source_type: school
           tier: 1A
           website_url: https://www.bayschools.com
-          rss_url: ""
+          rss_url: ""   # needs confirmation
           social_urls:
             facebook: ""
             x: ""
@@ -247,7 +247,7 @@ states:
           source_type: media
           tier: 2
           website_url: https://www.newsherald.com
-          rss_url: ""  # was https://www.newsherald.com/rss/ (404)
+          rss_url: ""  # keep blank for now
           social_urls:
             facebook: ""
             x: ""
