@@ -57,12 +57,6 @@ async function insertFeedItem(client, sourceId, title, link, publishedAtIso, sum
   );
 }
 
-function buildCountyQueries(state, county) {
-  const niceCounty = county.replace(/_/g, " ");
-  // Keep queries short + consistent
-  return [`"${niceCounty} County" ${state}`];
-}
-
 async function fetchText(url, timeoutMs) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
@@ -78,7 +72,6 @@ async function fetchText(url, timeoutMs) {
 
     const text = await res.text();
     if (!res.ok) {
-      // include some body for debugging
       const snippet = text.slice(0, 180).replace(/\s+/g, " ").trim();
       throw new Error(`HTTP ${res.status}. Body: ${snippet}`);
     }
@@ -104,7 +97,6 @@ function tryParseJson(text) {
   }
 }
 
-// GDELT 2.0/2.1 DOC API endpoint
 async function gdeltSearch(query, timespan, timeoutMs) {
   const base = "https://api.gdeltproject.org/api/v2/doc/doc";
   const url =
@@ -114,16 +106,11 @@ async function gdeltSearch(query, timespan, timeoutMs) {
 
   const text = await fetchText(url, timeoutMs);
   const parsed = tryParseJson(text);
-
-  if (!parsed.ok) {
-    // This is the exact message you were getting (starts with "Your searc...")
-    throw new Error(`Non-JSON response: ${parsed.reason}`);
-  }
+  if (!parsed.ok) throw new Error(`Non-JSON response: ${parsed.reason}`);
   return parsed.value;
 }
 
 function toIsoFromGdelt(seenStr) {
-  // Often 20260118103000
   if (!seenStr || typeof seenStr !== "string" || seenStr.length < 14) return null;
   const yyyy = seenStr.slice(0, 4);
   const mm = seenStr.slice(4, 6);
@@ -134,12 +121,26 @@ function toIsoFromGdelt(seenStr) {
   return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}Z`;
 }
 
+const STATE_NAME = {
+  FL: "Florida",
+  AL: "Alabama",
+};
+
+function buildCountyQueries(stateCode, county) {
+  const stateName = STATE_NAME[stateCode] || stateCode; // fall back if needed
+  const niceCounty = county.replace(/_/g, " ");
+
+  // Avoid short tokens like "FL"/"AL" that GDELT rejects.
+  // Also keep it simple so it matches in headlines/body.
+  return [
+    `"${niceCounty} County" ${stateName}`,
+    `"${niceCounty} County" "${stateName}"`,
+  ];
+}
+
 async function main() {
   const timeoutMs = envInt("FETCH_TIMEOUT_MS", 20000);
-
-  // IMPORTANT: slow down so GDELT doesn't throw the "Your search..." text response
-  const pauseMs = envInt("PAUSE_BETWEEN_QUERIES_MS", 2000);
-
+  const pauseMs = envInt("PAUSE_BETWEEN_QUERIES_MS", 1500);
   const timespan = process.env.GDELT_TIMESPAN || "1day";
 
   const STATES = (process.env.SEARCH_STATES || "FL,AL")
