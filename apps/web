@@ -1,0 +1,26 @@
+panhandlepulse.news/
+├─ apps/
+│  ├─ worker/                  (DONE)
+│  └─ web/
+│     ├─ package.json
+│     ├─ next.config.mjs
+│     ├─ tsconfig.json
+│     ├─ postcss.config.mjs
+│     ├─ tailwind.config.ts
+│     ├─ .eslintrc.json
+│     ├─ .gitignore
+│     ├─ .env.example
+│     └─ src/
+│        ├─ app/
+│        │  ├─ globals.css
+│        │  ├─ layout.tsx
+│        │  └─ page.tsx        ✅ first working page: latest articles
+│        ├─ components/
+│        │  ├─ ArticleCard.tsx
+│        │  └─ ArticleList.tsx
+│        └─ lib/
+│           ├─ db.ts
+│           ├─ format.ts
+│           └─ queries.ts
+└─ config/
+   └─ sources.yaml
