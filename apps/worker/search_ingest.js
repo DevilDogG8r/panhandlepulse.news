@@ -1,12 +1,11 @@
 /**
- * Panhandle Pulse — GDELT Search Ingest Worker (ESM, schema-aware, fills required state)
+ * Panhandle Pulse — GDELT Search Ingest Worker (ESM)
  * File: apps/worker/search_ingest.js
  *
  * Fixes:
- * - Works with existing `stories` schema by detecting columns
- * - Fills NOT NULL `state` column (your current blocker)
- * - Avoids column-not-exist errors by only writing columns that exist
- * - Cron-safe (run once, exit)
+ * - Fills NOT NULL `state` and `county` columns in `stories`
+ * - Schema-aware: only writes columns that exist
+ * - Cron-safe: run once, exit
  *
  * Required ENV:
  * - DATABASE_URL
@@ -40,25 +39,26 @@ const pool = new Pool({
 // ------------------------------
 // Regions / Queries
 // ------------------------------
+// IMPORTANT: county here should match what your app expects (usually plain county name without "County")
 const REGIONS = [
-  { tag: 'GDELT FL/Escambia', state: 'FL', queries: ['Escambia County Florida', '"Escambia County" "Florida"'] },
-  { tag: 'GDELT FL/Santa_Rosa', state: 'FL', queries: ['Santa Rosa County Florida', '"Santa Rosa County" "Florida"'] },
-  { tag: 'GDELT FL/Okaloosa', state: 'FL', queries: ['Okaloosa County Florida', '"Okaloosa County" "Florida"'] },
-  { tag: 'GDELT FL/Walton', state: 'FL', queries: ['Walton County Florida', '"Walton County" "Florida"'] },
-  { tag: 'GDELT FL/Bay', state: 'FL', queries: ['Bay County Florida', '"Bay County" "Florida"'] },
-  { tag: 'GDELT FL/Gulf', state: 'FL', queries: ['Gulf County Florida', '"Gulf County" "Florida"'] },
-  { tag: 'GDELT FL/Franklin', state: 'FL', queries: ['Franklin County Florida', '"Franklin County" "Florida"'] },
-  { tag: 'GDELT FL/Holmes', state: 'FL', queries: ['Holmes County Florida', '"Holmes County" "Florida"'] },
-  { tag: 'GDELT FL/Washington', state: 'FL', queries: ['Washington County Florida', '"Washington County" "Florida"'] },
-  { tag: 'GDELT FL/Jackson', state: 'FL', queries: ['Jackson County Florida', '"Jackson County" "Florida"'] },
-  { tag: 'GDELT FL/Calhoun', state: 'FL', queries: ['Calhoun County Florida', '"Calhoun County" "Florida"'] },
+  { tag: 'GDELT FL/Escambia', state: 'FL', county: 'Escambia', queries: ['Escambia County Florida', '"Escambia County" "Florida"'] },
+  { tag: 'GDELT FL/Santa_Rosa', state: 'FL', county: 'Santa Rosa', queries: ['Santa Rosa County Florida', '"Santa Rosa County" "Florida"'] },
+  { tag: 'GDELT FL/Okaloosa', state: 'FL', county: 'Okaloosa', queries: ['Okaloosa County Florida', '"Okaloosa County" "Florida"'] },
+  { tag: 'GDELT FL/Walton', state: 'FL', county: 'Walton', queries: ['Walton County Florida', '"Walton County" "Florida"'] },
+  { tag: 'GDELT FL/Bay', state: 'FL', county: 'Bay', queries: ['Bay County Florida', '"Bay County" "Florida"'] },
+  { tag: 'GDELT FL/Gulf', state: 'FL', county: 'Gulf', queries: ['Gulf County Florida', '"Gulf County" "Florida"'] },
+  { tag: 'GDELT FL/Franklin', state: 'FL', county: 'Franklin', queries: ['Franklin County Florida', '"Franklin County" "Florida"'] },
+  { tag: 'GDELT FL/Holmes', state: 'FL', county: 'Holmes', queries: ['Holmes County Florida', '"Holmes County" "Florida"'] },
+  { tag: 'GDELT FL/Washington', state: 'FL', county: 'Washington', queries: ['Washington County Florida', '"Washington County" "Florida"'] },
+  { tag: 'GDELT FL/Jackson', state: 'FL', county: 'Jackson', queries: ['Jackson County Florida', '"Jackson County" "Florida"'] },
+  { tag: 'GDELT FL/Calhoun', state: 'FL', county: 'Calhoun', queries: ['Calhoun County Florida', '"Calhoun County" "Florida"'] },
 
-  { tag: 'GDELT AL/Mobile', state: 'AL', queries: ['Mobile County Alabama', '"Mobile County" "Alabama"'] },
-  { tag: 'GDELT AL/Baldwin', state: 'AL', queries: ['Baldwin County Alabama', '"Baldwin County" "Alabama"'] },
-  { tag: 'GDELT AL/Escambia_AL', state: 'AL', queries: ['Escambia County Alabama', '"Escambia County" "Alabama"'] },
-  { tag: 'GDELT AL/Covington', state: 'AL', queries: ['Covington County Alabama', '"Covington County" "Alabama"'] },
-  { tag: 'GDELT AL/Geneva', state: 'AL', queries: ['Geneva County Alabama', '"Geneva County" "Alabama"'] },
-  { tag: 'GDELT AL/Houston', state: 'AL', queries: ['Houston County Alabama', '"Houston County" "Alabama"'] }
+  { tag: 'GDELT AL/Mobile', state: 'AL', county: 'Mobile', queries: ['Mobile County Alabama', '"Mobile County" "Alabama"'] },
+  { tag: 'GDELT AL/Baldwin', state: 'AL', county: 'Baldwin', queries: ['Baldwin County Alabama', '"Baldwin County" "Alabama"'] },
+  { tag: 'GDELT AL/Escambia_AL', state: 'AL', county: 'Escambia', queries: ['Escambia County Alabama', '"Escambia County" "Alabama"'] },
+  { tag: 'GDELT AL/Covington', state: 'AL', county: 'Covington', queries: ['Covington County Alabama', '"Covington County" "Alabama"'] },
+  { tag: 'GDELT AL/Geneva', state: 'AL', county: 'Geneva', queries: ['Geneva County Alabama', '"Geneva County" "Alabama"'] },
+  { tag: 'GDELT AL/Houston', state: 'AL', county: 'Houston', queries: ['Houston County Alabama', '"Houston County" "Alabama"'] }
 ];
 
 // ------------------------------
@@ -132,24 +132,18 @@ async function getTableColumns(tableName) {
     [schema, table]
   );
 
-  if (!rows || rows.length === 0) {
-    throw new Error(`Table not found or no columns: ${tableName}`);
-  }
-
+  if (!rows || rows.length === 0) throw new Error(`Table not found or no columns: ${tableName}`);
   return new Set(rows.map(r => r.column_name));
 }
 
-// If table has a unique key we can use for ON CONFLICT, use it.
-// If not, we insert-only (your logs show none found).
+// If no unique key exists, insert-only is fine for now (but duplicates will accumulate).
 function pickUniqueKeyColumn(columns) {
   const candidates = ['url', 'link', 'canonical_url', 'guid', 'external_id', 'source_url'];
-  for (const c of candidates) {
-    if (columns.has(c)) return c;
-  }
+  for (const c of candidates) if (columns.has(c)) return c;
   return null;
 }
 
-function buildRowForTable(columns, { regionTag, state, query, article }) {
+function buildRowForTable(columns, { regionTag, state, county, query, article }) {
   const url = article?.url || article?.urlsource || article?.sourceurl || null;
   const title = article?.title || null;
   const publishedAt = parseGdeltSeenDate(article?.seendate) || null;
@@ -164,11 +158,9 @@ function buildRowForTable(columns, { regionTag, state, query, article }) {
 
   const out = {};
 
-  // Fill state if required/available
-  // Your table has NOT NULL state, so we ALWAYS set it if column exists.
-  if (columns.has('state')) out.state = state;                 // e.g., "FL" / "AL"
-  if (columns.has('state_code')) out.state_code = state;
-  if (columns.has('state_abbr')) out.state_abbr = state;
+  // REQUIRED FIELDS in your table
+  if (columns.has('state')) out.state = state;                 // FL/AL
+  if (columns.has('county')) out.county = county;              // e.g. "Escambia" (no "County" suffix)
 
   // URL-ish
   if (columns.has('url')) out.url = url;
@@ -180,7 +172,7 @@ function buildRowForTable(columns, { regionTag, state, query, article }) {
   if (columns.has('title')) out.title = title;
   if (columns.has('headline')) out.headline = title;
 
-  // Source/provider-ish
+  // Provider/source-ish
   if (columns.has('provider')) out.provider = 'GDELT';
   if (columns.has('source_name')) out.source_name = 'GDELT';
   if (columns.has('origin')) out.origin = 'GDELT';
@@ -190,7 +182,7 @@ function buildRowForTable(columns, { regionTag, state, query, article }) {
   if (columns.has('region')) out.region = regionTag;
   if (columns.has('query')) out.query = query;
 
-  // Domain/host
+  // Domain
   if (columns.has('domain')) out.domain = domain;
   if (columns.has('host')) out.host = domain;
 
@@ -198,8 +190,6 @@ function buildRowForTable(columns, { regionTag, state, query, article }) {
   if (columns.has('published_at')) out.published_at = publishedAt;
   if (columns.has('published')) out.published = publishedAt;
   if (columns.has('pub_date')) out.pub_date = publishedAt;
-
-  // Prefer an ingest timestamp if it exists
   if (columns.has('fetched_at')) out.fetched_at = fetchedAt;
   if (columns.has('ingested_at')) out.ingested_at = fetchedAt;
   if (columns.has('created_at')) out.created_at = fetchedAt;
@@ -231,23 +221,17 @@ function buildInsertSql({ tableName, columnsToInsert, conflictColumn, updateColu
   return sql;
 }
 
-async function writeOne({ tableName, tableColumns, conflictColumn, regionTag, state, query, article }) {
-  const row = buildRowForTable(tableColumns, { regionTag, state, query, article });
-
-  // Only keep defined values
+async function writeOne({ tableName, tableColumns, conflictColumn, regionTag, state, county, query, article }) {
+  const row = buildRowForTable(tableColumns, { regionTag, state, county, query, article });
   const keys = Object.keys(row).filter(k => row[k] !== undefined);
 
-  if (keys.length === 0) return { didWrite: false, reason: 'no_matching_columns' };
+  if (keys.length === 0) return { didWrite: false };
 
-  // If the table requires state and we have the column, ensure we never pass null
-  if (tableColumns.has('state') && !row.state) {
-    return { didWrite: false, reason: 'missing_state' };
-  }
+  // Hard guarantee: if these columns exist, never allow null
+  if (tableColumns.has('state') && !row.state) throw new Error('missing required state');
+  if (tableColumns.has('county') && !row.county) throw new Error('missing required county');
 
-  // If we have a conflictColumn, ensure it's present
-  if (conflictColumn && !row[conflictColumn]) {
-    return { didWrite: false, reason: `missing_conflict_value:${conflictColumn}` };
-  }
+  if (conflictColumn && !row[conflictColumn]) return { didWrite: false };
 
   const updateColumns = conflictColumn ? keys.filter(k => k !== conflictColumn) : [];
   const sql = buildInsertSql({
@@ -270,9 +254,7 @@ async function run() {
 
   console.log(`[CONFIG] gdeltDocApi=${GDELT_DOC_API}`);
   console.log(`[CONFIG] targetTable=${TARGET_TABLE}`);
-  console.log(
-    `[SEARCH_INGEST_START] ts=${new Date().toISOString()} lookbackHours=${LOOKBACK_HOURS} maxRecords=${MAX_RECORDS} minKeywordLen=${MIN_KEYWORD_LEN}`
-  );
+  console.log(`[SEARCH_INGEST_START] ts=${new Date().toISOString()} lookbackHours=${LOOKBACK_HOURS} maxRecords=${MAX_RECORDS} minKeywordLen=${MIN_KEYWORD_LEN}`);
 
   const end = gdeltUtcStamp(new Date());
   const start = gdeltUtcStamp(new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000));
@@ -284,10 +266,8 @@ async function run() {
   const conflictColumn = pickUniqueKeyColumn(tableColumns);
   console.log(`[DB] upsert key column=${conflictColumn || 'NONE (insert-only)'}`);
 
-  // sanity log: if state column exists, confirm we will fill it
-  if (tableColumns.has('state')) {
-    console.log('[DB] state column detected; worker will fill state=FL/AL based on region');
-  }
+  if (tableColumns.has('state')) console.log('[DB] will fill state=FL/AL');
+  if (tableColumns.has('county')) console.log('[DB] will fill county from region mapping');
 
   let totalResults = 0;
   let totalWrites = 0;
@@ -295,7 +275,8 @@ async function run() {
 
   for (const region of REGIONS) {
     const regionTag = region.tag;
-    const state = region.state; // FL or AL
+    const state = region.state;
+    const county = region.county;
 
     for (const rawQuery of region.queries) {
       const query = String(rawQuery || '').trim();
@@ -305,12 +286,7 @@ async function run() {
         continue;
       }
 
-      const url = buildGdeltUrl({
-        query,
-        startdatetime: start,
-        enddatetime: end,
-        maxrecords: MAX_RECORDS
-      });
+      const url = buildGdeltUrl({ query, startdatetime: start, enddatetime: end, maxrecords: MAX_RECORDS });
 
       try {
         const json = await fetchJson(url);
@@ -327,10 +303,10 @@ async function run() {
               conflictColumn,
               regionTag,
               state,
+              county,
               query,
               article: a
             });
-
             if (r.didWrite) {
               totalWrites++;
               writeAttempts++;
@@ -351,9 +327,7 @@ async function run() {
   }
 
   const durationMs = Date.now() - started;
-  console.log(
-    `[SEARCH_INGEST_DONE] table=${TARGET_TABLE} totalResults=${totalResults} totalWrites=${totalWrites} totalRowErrors=${totalRowErrors} durationMs=${durationMs}`
-  );
+  console.log(`[SEARCH_INGEST_DONE] table=${TARGET_TABLE} totalResults=${totalResults} totalWrites=${totalWrites} totalRowErrors=${totalRowErrors} durationMs=${durationMs}`);
 }
 
 run()
