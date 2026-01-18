@@ -1,11 +1,12 @@
 /**
- * Panhandle Pulse — GDELT Search Ingest Worker (ESM)
+ * Panhandle Pulse — GDELT Search Ingest Worker (ESM, cron-safe)
  * File: apps/worker/search_ingest.js
  *
- * Fixes:
- * - No "keyword too short" errors (guards)
- * - No Postgres timezone errors (no AT TIME ZONE, no timezone strings)
- * - ESM-compatible (no require)
+ * Fixes/guarantees:
+ * - ESM compatible (project has "type": "module")
+ * - No keyword-too-short errors
+ * - No Postgres timezone errors (no AT TIME ZONE)
+ * - Auto-detects article table OR creates a default one
  *
  * Required ENV:
  * - DATABASE_URL
@@ -31,7 +32,6 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Railway Postgres commonly requires SSL; this keeps it working in most setups.
   ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: false }
 });
 
@@ -39,7 +39,6 @@ const pool = new Pool({
 // Regions / Queries (edit here)
 // ------------------------------------
 const REGIONS = [
-  // Florida Panhandle + nearby
   { tag: 'GDELT FL/Escambia', queries: ['Escambia County Florida', '"Escambia County" "Florida"'] },
   { tag: 'GDELT FL/Santa_Rosa', queries: ['Santa Rosa County Florida', '"Santa Rosa County" "Florida"'] },
   { tag: 'GDELT FL/Okaloosa', queries: ['Okaloosa County Florida', '"Okaloosa County" "Florida"'] },
@@ -52,7 +51,6 @@ const REGIONS = [
   { tag: 'GDELT FL/Jackson', queries: ['Jackson County Florida', '"Jackson County" "Florida"'] },
   { tag: 'GDELT FL/Calhoun', queries: ['Calhoun County Florida', '"Calhoun County" "Florida"'] },
 
-  // South Alabama
   { tag: 'GDELT AL/Mobile', queries: ['Mobile County Alabama', '"Mobile County" "Alabama"'] },
   { tag: 'GDELT AL/Baldwin', queries: ['Baldwin County Alabama', '"Baldwin County" "Alabama"'] },
   { tag: 'GDELT AL/Escambia_AL', queries: ['Escambia County Alabama', '"Escambia County" "Alabama"'] },
@@ -68,7 +66,6 @@ function pad2(n) {
   return String(n).padStart(2, '0');
 }
 
-// GDELT wants UTC timestamps like YYYYMMDDHHMMSS
 function gdeltUtcStamp(date = new Date()) {
   const d = new Date(date);
   return (
@@ -81,7 +78,6 @@ function gdeltUtcStamp(date = new Date()) {
   );
 }
 
-// Parse GDELT seendate format "YYYYMMDDHHMMSS" into JS Date (UTC)
 function parseGdeltSeenDate(seendate) {
   if (!seendate || typeof seendate !== 'string' || seendate.length < 14) return null;
   const y = Number(seendate.slice(0, 4));
@@ -122,25 +118,84 @@ async function fetchJson(url) {
 }
 
 // ------------------------------------
-// DB upsert (ONLY edit this block if schema differs)
+// DB: auto-detect or create table
 // ------------------------------------
-const UPSERT_SQL = `
-  INSERT INTO panhandle_articles
-    (source, region_tag, query, title, url, domain, published_at, fetched_at, image, summary)
-  VALUES
-    ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-  ON CONFLICT (url) DO UPDATE SET
-    title = EXCLUDED.title,
-    domain = EXCLUDED.domain,
-    published_at = EXCLUDED.published_at,
-    fetched_at = EXCLUDED.fetched_at,
-    image = COALESCE(EXCLUDED.image, panhandle_articles.image),
-    summary = COALESCE(EXCLUDED.summary, panhandle_articles.summary)
-`;
+async function tableExists(tableName) {
+  const { rows } = await pool.query(
+    `SELECT to_regclass($1) AS reg;`,
+    [tableName]
+  );
+  return rows?.[0]?.reg !== null;
+}
 
-async function upsertArticles({ regionTag, query, articles }) {
+async function ensureTable() {
+  // If you already have a real table, add it to the top of this list.
+  const candidates = [
+    'panhandle_articles',
+    'articles',
+    'stories',
+    'news',
+    'panhandle_news',
+    'panhandle_items',
+    'rss_items',
+    'ingest_items',
+    'content_items',
+    'panhandle_search_articles' // fallback we can create
+  ];
+
+  for (const t of candidates) {
+    if (await tableExists(t)) {
+      console.log(`[DB] using existing table=${t}`);
+      return t;
+    }
+  }
+
+  const fallback = 'panhandle_search_articles';
+  console.log(`[DB] no candidate table found; creating table=${fallback}`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ${fallback} (
+      id BIGSERIAL PRIMARY KEY,
+      source TEXT NOT NULL,
+      region_tag TEXT,
+      query TEXT,
+      title TEXT,
+      url TEXT NOT NULL UNIQUE,
+      domain TEXT,
+      published_at TIMESTAMPTZ,
+      fetched_at TIMESTAMPTZ NOT NULL,
+      image TEXT,
+      summary TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  console.log(`[DB] created/verified table=${fallback}`);
+  return fallback;
+}
+
+function buildUpsertSql(tableName) {
+  // NOTE: tableName is internal (from allowlist/create), not user input — safe to interpolate.
+  return `
+    INSERT INTO ${tableName}
+      (source, region_tag, query, title, url, domain, published_at, fetched_at, image, summary)
+    VALUES
+      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+    ON CONFLICT (url) DO UPDATE SET
+      title = EXCLUDED.title,
+      domain = EXCLUDED.domain,
+      published_at = EXCLUDED.published_at,
+      fetched_at = EXCLUDED.fetched_at,
+      image = COALESCE(EXCLUDED.image, ${tableName}.image),
+      summary = COALESCE(EXCLUDED.summary, ${tableName}.summary)
+  `;
+}
+
+async function upsertArticles({ tableName, regionTag, query, articles }) {
+  const UPSERT_SQL = buildUpsertSql(tableName);
+
   let insertAttempts = 0;
-  const fetchedAt = new Date(); // safe timestamptz value
+  const fetchedAt = new Date();
 
   for (const a of articles) {
     const url = a?.url || a?.urlsource || a?.sourceurl;
@@ -179,19 +234,21 @@ async function upsertArticles({ regionTag, query, articles }) {
 }
 
 // ------------------------------------
-// Main run
+// Main
 // ------------------------------------
 async function run() {
   const started = Date.now();
 
-  const end = gdeltUtcStamp(new Date());
-  const start = gdeltUtcStamp(new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000));
-
+  console.log(`[CONFIG] gdeltDocApi=${GDELT_DOC_API}`);
   console.log(
     `[SEARCH_INGEST_START] ts=${new Date().toISOString()} lookbackHours=${LOOKBACK_HOURS} maxRecords=${MAX_RECORDS} minKeywordLen=${MIN_KEYWORD_LEN}`
   );
+
+  const end = gdeltUtcStamp(new Date());
+  const start = gdeltUtcStamp(new Date(Date.now() - LOOKBACK_HOURS * 60 * 60 * 1000));
   console.log(`[TIME] start=${start} end=${end}`);
-  console.log(`[CONFIG] gdeltDocApi=${GDELT_DOC_API}`);
+
+  const tableName = await ensureTable();
 
   let totalResults = 0;
   let totalInsertAttempts = 0;
@@ -221,7 +278,7 @@ async function run() {
 
         let insertAttempts = 0;
         if (results > 0) {
-          insertAttempts = await upsertArticles({ regionTag, query, articles });
+          insertAttempts = await upsertArticles({ tableName, regionTag, query, articles });
         }
 
         totalResults += results;
@@ -236,11 +293,10 @@ async function run() {
 
   const durationMs = Date.now() - started;
   console.log(
-    `[SEARCH_INGEST_DONE] totalResults=${totalResults} totalInsertAttempts=${totalInsertAttempts} durationMs=${durationMs}`
+    `[SEARCH_INGEST_DONE] table=${tableName} totalResults=${totalResults} totalInsertAttempts=${totalInsertAttempts} durationMs=${durationMs}`
   );
 }
 
-// Run once for cron, then exit
 run()
   .then(async () => {
     await pool.end().catch(() => {});
