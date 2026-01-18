@@ -1,6 +1,4 @@
--- apps/worker/db.sql
-
--- Enable UUID generation (Postgres 13+ typically has pgcrypto available)
+-- Enable UUID generation
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ----------------------------
@@ -22,7 +20,6 @@ CREATE TABLE IF NOT EXISTS sources (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Unique key for upserts
 CREATE UNIQUE INDEX IF NOT EXISTS sources_state_county_name_unique
 ON sources(state, county, source_name);
 
@@ -40,7 +37,6 @@ CREATE TABLE IF NOT EXISTS feed_items (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Dedup within source
 CREATE UNIQUE INDEX IF NOT EXISTS feed_items_source_hash_unique
 ON feed_items(source_id, content_hash);
 
@@ -51,36 +47,29 @@ CREATE INDEX IF NOT EXISTS feed_items_source_id_idx
 ON feed_items(source_id);
 
 -- ----------------------------
--- AI STORIES (Level 2)
+-- AI STORIES (future use)
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS stories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   state TEXT NOT NULL,
   county TEXT NOT NULL,
   region TEXT NOT NULL DEFAULT '',
-
-  -- What kind of story is it?
-  story_type TEXT NOT NULL DEFAULT 'roundup', -- roundup | breaking | public_record | etc.
-
+  story_type TEXT NOT NULL DEFAULT 'roundup',
   title TEXT NOT NULL,
-  dek TEXT NOT NULL DEFAULT '',              -- short subtitle
-  body_markdown TEXT NOT NULL,               -- the actual story (markdown)
+  dek TEXT NOT NULL DEFAULT '',
+  body_markdown TEXT NOT NULL,
   bullets_json JSONB NOT NULL DEFAULT '[]'::jsonb,
-
   time_window_start TIMESTAMPTZ NOT NULL,
   time_window_end TIMESTAMPTZ NOT NULL,
-
   model_name TEXT NOT NULL DEFAULT '',
   prompt_version TEXT NOT NULL DEFAULT 'v1',
-  status TEXT NOT NULL DEFAULT 'published',  -- draft | published | failed
-
+  status TEXT NOT NULL DEFAULT 'published',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS stories_state_county_created_at_idx
 ON stories(state, county, created_at DESC);
 
--- Which feed_items were used
 CREATE TABLE IF NOT EXISTS story_sources (
   story_id UUID NOT NULL REFERENCES stories(id) ON DELETE CASCADE,
   feed_item_id BIGINT NOT NULL REFERENCES feed_items(id) ON DELETE CASCADE,
